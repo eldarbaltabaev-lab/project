@@ -1,201 +1,594 @@
-/* =========================================================
-   Сверка табелей. Стили.
-   Идея: бухгалтерская ведомость. Расхождения обведены красным
-   карандашом, сверенные строки отмечены зелёной галочкой.
-   Все цвета и шрифты вынесены в переменные ниже: чтобы сменить
-   облик, достаточно поправить :root.
-   ========================================================= */
-
-:root{
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
-  color-scheme:light;
-
-  /* бумага и чернила */
-  --paper:#eef1ee;      /* фон страницы */
-  --sheet:#fbfcfb;      /* лист ведомости */
-  --hover:#f1f5fb;
-  --ink:#1b2433;        /* основной текст */
-  --ink-2:#5a6575;      /* вторичный текст */
-  --rule:#cbd3d9;       /* линейка */
-  --rule-soft:#e2e7ea;  /* тонкая линейка */
-
-  /* синяя паста: действия */
-  --pen:#27499a;
-  --pen-bg:#e3eafa;
-  --on-pen:#fff;
-
-  /* красный карандаш: расхождение */
-  --red:#bf3b24;
-  --red-bg:#fbe3dc;
-
-  /* галочка: сверено */
-  --tick:#1f7a4b;
-  --tick-bg:#dcf0e4;
-
-  /* маркер: предупреждение */
-  --mark:#fff0a6;
-  --mark-ink:#5a4a00;
-  --mark-edge:#d4b500;
-
-  --serif:"PT Serif",Georgia,"Times New Roman",serif;
-  --sans:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-
-  /* колонки строки сотрудника (шапка и строки делят одну сетку) */
-  --cols:minmax(0,2.2fr) minmax(0,1.5fr) 5.5rem 5.5rem 4.5rem 5.5rem 6.5rem;
+/* ============ ЯПОНСКАЯ ТЕМАТИКА ============ */
+:root {
+  --washi: #f7f3ec;          /* бумага васи */
+  --washi-2: #efe8dc;        /* бумага темнее */
+  --sumi: #1c1a17;           /* тушь */
+  --sumi-soft: #4a453d;      /* тушь мягкая */
+  --hinomaru: #b3242b;       /* красный круг (флаг) */
+  --sakura: #d98a9a;         /* сакура */
+  --matcha: #6f8f5c;         /* зелёный чай */
+  --ai: #2f4b5e;             /* индиго */
+  --line: #d8cfbf;           /* линии */
+  --shadow: 0 2px 0 rgba(28,26,23,.06), 0 10px 28px -14px rgba(28,26,23,.35);
 }
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
 
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    color-scheme:dark;
-    --paper:#14181f;--sheet:#1b2029;--hover:#232a36;
-    --ink:#e4e8ee;--ink-2:#9aa5b4;--rule:#323a48;--rule-soft:#272e3a;
-    --pen:#8fb0ff;--pen-bg:#1f2a44;--on-pen:#0f1a33;
-    --red:#ff8d78;--red-bg:#4a211b;
-    --tick:#6fd69c;--tick-bg:#153a28;
-    --mark:#4d4216;--mark-ink:#ffe98a;--mark-edge:#a58a10;
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--sumi);
+  font: 15px/1.55 "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP",
+        Georgia, "Times New Roman", serif;
+  background-color: var(--washi);
+  /* лёгкая фактура бумаги + солнечные блики */
+  background-image:
+    radial-gradient(1200px 600px at 110% -10%, rgba(217,138,154,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(47,75,94,.08), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(28,26,23,.025) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(28,26,23,.02) 0 1px, transparent 1px 4px);
+  background-attachment: fixed;
+}
+
+/* вертикальная «кайсёку»-полоса слева, как свиток */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 10px;
+  background: linear-gradient(180deg, var(--hinomaru), var(--ai) 45%, var(--matcha));
+  opacity: .85;
+  z-index: 0;
+  pointer-events: none;
+}
+
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 28px 80px 38px;
+}
+
+/* ============ ЗАГОЛОВОК ============ */
+h1 {
+  position: relative;
+  margin: 0 0 6px;
+  font-size: clamp(24px, 3.4vw, 38px);
+  font-weight: 600;
+  letter-spacing: .06em;
+  color: var(--sumi);
+  padding-bottom: 14px;
+}
+h1::before {
+  content: "タ";
+  position: absolute;
+  right: 0; top: -6px;
+  font-size: 1.6em;
+  color: var(--hinomaru);
+  opacity: .12;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+h1::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 72px; height: 3px;
+  background: linear-gradient(90deg, var(--hinomaru), var(--sakura));
+  border-radius: 2px;
+}
+
+.mut {
+  color: var(--sumi-soft);
+  font-size: 13.5px;
+  max-width: 78ch;
+}
+main > .mut { margin: 4px 0 26px; }
+p.mut { margin-top: 26px; padding-top: 16px; border-top: 1px dashed var(--line); }
+
+/* ============ ЗОНЫ ЗАГРУЗКИ ============ */
+.zones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.zone {
+  position: relative;
+  background: linear-gradient(180deg, #fffdf8, var(--washi-2));
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px 20px;
+  box-shadow: var(--shadow);
+  transition: border-color .2s, transform .15s, box-shadow .2s;
+  overflow: hidden;
+}
+/* декоративный угол-«оригами» */
+.zone::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0;
+  border-style: solid;
+  border-width: 0 26px 26px 0;
+  border-color: transparent var(--washi-2) transparent transparent;
+  filter: drop-shadow(-1px 1px 0 var(--line));
+  opacity: .9;
+}
+.zone:hover { transform: translateY(-2px); box-shadow: 0 4px 0 rgba(28,26,23,.06), 0 16px 34px -16px rgba(28,26,23,.4); }
+.zone.ok { border-color: var(--matcha); }
+.zone.drag {
+  border-color: var(--hinomaru);
+  border-style: dashed;
+  background: linear-gradient(180deg, #fff, #fbeeef);
+}
+
+.zone b {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--sumi);
+}
+
+/* красная «печать» сбоку заголовка зоны */
+.zone b::before {
+  content: "";
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--hinomaru);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.5);
+  flex: none;
+}
+
+.tag {
+  font: 11px/1 "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  padding: 4px 8px;
+  border-radius: 2px;
+  background: var(--ai);
+  color: #f4efe6;
+  font-weight: 600;
+}
+
+.fn {
+  margin: 10px 0 14px;
+  font-size: 13px;
+  color: var(--sumi-soft);
+  word-break: break-word;
+  min-height: 1.4em;
+}
+.zone.ok .fn { color: var(--matcha); font-weight: 600; }
+
+.zone select {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 3px;
+  background: #fffdf8;
+  color: var(--sumi);
+  max-width: 100%;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+.zone select:focus { outline: 2px solid var(--sakura); outline-offset: 1px; }
+
+/* ============ КНОПКИ ============ */
+button {
+  font: 600 13px/1 "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+  letter-spacing: .06em;
+  padding: 10px 18px;
+  border: 1.5px solid var(--sumi);
+  border-radius: 3px;
+  background: var(--sumi);
+  color: var(--washi);
+  cursor: pointer;
+  transition: background .15s, color .15s, transform .1s, box-shadow .15s;
+  box-shadow: 0 2px 0 rgba(28,26,23,.25);
+}
+button:hover { background: var(--hinomaru); border-color: var(--hinomaru); }
+button:active { transform: translateY(1px); box-shadow: none; }
+button:focus-visible { outline: 2px solid var(--sakura); outline-offset: 2px; }
+
+#clrFx {
+  background: transparent;
+  color: var(--sumi);
+  border-color: var(--line);
+  box-shadow: none;
+}
+#clrFx:hover { background: var(--hinomaru); color: #fff; border-color: var(--hinomaru); }
+
+/* ============ ОПЦИИ ============ */
+.opts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  padding: 16px 20px;
+  background: rgba(255,253,248,.7);
+  border: 1.5px solid var(--line);
+  border-left: 4px solid var(--hinomaru);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  margin-bottom: 22px;
+  font-size: 13.5px;
+}
+
+.opts label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--sumi-soft);
+  user-select: none;
+  transition: color .15s;
+}
+.opts label:hover { color: var(--sumi); }
+
+/* кастомные чекбоксы — «печати» */
+.opts input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--sumi-soft);
+  border-radius: 50%;
+  background: #fffdf8;
+  cursor: pointer;
+  transition: all .15s;
+  flex: none;
+  position: relative;
+}
+.opts input[type="checkbox"]:checked {
+  background: var(--hinomaru);
+  border-color: var(--hinomaru);
+  box-shadow: inset 0 0 0 3px #fffdf8;
+}
+.opts input[type="checkbox"]:focus-visible { outline: 2px solid var(--sakura); outline-offset: 2px; }
+
+#q {
+  margin-left: auto;
+  font: inherit;
+  font-size: 13.5px;
+  padding: 8px 14px;
+  min-width: 200px;
+  border: 1.5px solid var(--line);
+  border-radius: 3px;
+  background: #fffdf8;
+  color: var(--sumi);
+  transition: border-color .15s, box-shadow .15s;
+}
+#q::placeholder { color: #a89f8e; font-style: italic; }
+#q:focus { outline: none; border-color: var(--sakura); box-shadow: 0 0 0 3px rgba(217,138,154,.25); }
+
+/* ============ СООБЩЕНИЯ / СВОДКА ============ */
+.msg {
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  background: #fdf3f0;
+  border: 1.5px solid var(--sakura);
+  border-left: 4px solid var(--hinomaru);
+  border-radius: 3px;
+  color: var(--sumi);
+  font-size: 13.5px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 15px;
+  background: #fffdf8;
+  border: 1.5px solid var(--line);
+  border-radius: 3px;
+  font-size: 13px;
+  color: var(--sumi-soft);
+  box-shadow: 0 1px 0 rgba(28,26,23,.05);
+  position: relative;
+  overflow: hidden;
+}
+.chip::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--line);
+}
+.chip b {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sumi);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+.chip.bad { border-color: var(--hinomaru); background: #fdf5f4; }
+.chip.bad::before { background: var(--hinomaru); }
+.chip.bad b { color: var(--hinomaru); }
+.chip.good { border-color: var(--matcha); background: #f6f9f2; }
+.chip.good::before { background: var(--matcha); }
+.chip.good b { color: var(--matcha); }
+
+/* ============ ТАБЛИЦА СОТРУДНИКОВ ============ */
+.head,
+details.emp > summary {
+  display: grid;
+  grid-template-columns: minmax(150px, 2fr) minmax(110px, 1.4fr) 64px 64px 56px 64px 96px;
+  gap: 8px;
+  align-items: center;
+}
+
+.head {
+  padding: 12px 18px;
+  background: var(--sumi);
+  color: var(--washi);
+  border-radius: 4px 4px 0 0;
+  font: 600 11.5px/1.3 "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  box-shadow: 0 2px 0 rgba(28,26,23,.2);
+}
+
+.head .n { text-align: right; }
+
+details.emp {
+  background: #fffdf8;
+  border: 1.5px solid var(--line);
+  border-top: none;
+  border-radius: 0;
+  margin-bottom: 0;
+  transition: background .15s;
+}
+details.emp:nth-of-type(even) { background: #fdfaf3; }
+details.emp:last-of-type { border-radius: 0 0 4px 4px; margin-bottom: 20px; }
+details.emp:hover { background: #fff; }
+
+details.emp > summary {
+  padding: 13px 18px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  border-left: 4px solid transparent;
+  transition: border-color .15s;
+}
+details.emp > summary::-webkit-details-marker { display: none; }
+details.emp > summary::marker { display: none; }
+
+details.emp[open] > summary { border-left-color: var(--sakura); background: #fffaf5; }
+details.emp.done > summary { border-left-color: var(--matcha); }
+details.emp.done { opacity: .78; }
+
+details.emp > summary > div:first-child {
+  font-size: 14.5px;
+  line-height: 1.35;
+  min-width: 0;
+}
+details.emp > summary b { font-weight: 600; }
+
+.pos {
+  font-size: 12px;
+  color: var(--sumi-soft);
+  font-style: italic;
+  line-height: 1.3;
+}
+
+details.emp .n {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 13.5px;
+  font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+  letter-spacing: -.01em;
+}
+details.emp .n.d { color: var(--hinomaru); font-weight: 700; }
+details.emp .n.z { color: #b3ab9c; }
+
+.warn {
+  display: inline-block;
+  font-size: 11.5px;
+  color: var(--hinomaru);
+  font-style: normal;
+  background: #fdf0f0;
+  padding: 2px 7px;
+  border-radius: 2px;
+  margin-left: 4px;
+}
+
+/* чекбокс «исправил» */
+.fix {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--sumi-soft);
+  white-space: nowrap;
+}
+.fix input[type="checkbox"] {
+  appearance: none;
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--sumi-soft);
+  border-radius: 2px;
+  background: #fffdf8;
+  cursor: pointer;
+  position: relative;
+  transition: all .15s;
+  flex: none;
+}
+.fix input[type="checkbox"]:checked {
+  background: var(--matcha);
+  border-color: var(--matcha);
+}
+.fix input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px; top: 1px;
+  width: 5px; height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ============ ДЕТАЛЬНАЯ СЕТКА ДНЕЙ ============ */
+details.emp .grid {
+  padding: 4px 14px 18px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-top: 1px dashed var(--line);
+  margin-top: 2px;
+  background: linear-gradient(180deg, #fffdf8, #fbf6ec);
+}
+
+details.emp table {
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+  min-width: 100%;
+  margin-top: 10px;
+}
+
+details.emp th,
+details.emp td {
+  border: 1px solid var(--line);
+  padding: 6px 4px;
+  text-align: center;
+  min-width: 26px;
+  font-variant-numeric: tabular-nums;
+  background: #fffdf8;
+}
+
+details.emp th {
+  background: var(--washi-2);
+  color: var(--sumi-soft);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: .02em;
+  position: sticky;
+  top: 0;
+}
+
+details.emp th.l,
+details.emp td.l {
+  text-align: left;
+  padding-left: 12px;
+  min-width: 90px;
+  font-weight: 600;
+  background: var(--washi-2);
+  color: var(--sumi);
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+details.emp td.x {
+  background: #fcecec;
+  color: var(--hinomaru);
+  font-weight: 700;
+  position: relative;
+}
+details.emp td.x::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px solid rgba(179,36,43,.35);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* ============ СПИСКИ «ТОЛЬКО В...» ============ */
+details.emp.only {
+  border-radius: 4px;
+  margin-bottom: 12px;
+  border-left: 4px solid var(--ai);
+  background: #f7f9fa;
+}
+details.emp.only > summary {
+  display: block;
+  padding: 13px 18px;
+  border-left: none;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
+}
+details.emp.only > summary b {
+  font-size: 14px;
+  color: var(--ai);
+  letter-spacing: .03em;
+}
+details.emp.only .grid { padding: 0 18px 16px; border-top: none; background: transparent; }
+details.emp.only ul {
+  margin: 10px 0 0;
+  padding-left: 22px;
+  font-size: 13px;
+  line-height: 1.9;
+}
+details.emp.only li { color: var(--sumi); }
+details.emp.only li::marker { color: var(--sakura); }
+details.emp.only .pos { color: var(--sumi-soft); }
+
+/* ============ АДАПТИВ ============ */
+@media (max-width: 860px) {
+  main { padding: 28px 16px 60px 24px; }
+  .zones { grid-template-columns: 1fr; }
+  .opts { gap: 8px 14px; }
+  #q { margin-left: 0; flex: 1 1 100%; min-width: 0; }
+
+  .head { display: none; }
+  details.emp > summary {
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas:
+      "name name name"
+      "pos  h1   h2"
+      "d    d    fx";
+    gap: 6px 12px;
+    padding: 12px 14px;
+  }
+  details.emp > summary > div:first-child { grid-area: name; }
+  details.emp > summary .pos  { grid-area: pos; }
+  details.emp > summary .n:nth-of-type(1) { grid-area: h1; }
+  details.emp > summary .n:nth-of-type(2) { grid-area: h2; }
+  details.emp > summary .n:nth-of-type(3) { grid-area: d; text-align: left; }
+  details.emp > summary .n:nth-of-type(4) { grid-area: d; justify-self: end; }
+  details.emp > summary .n:nth-of-type(5) { grid-area: fx; justify-self: end; }
+
+  details.emp > summary .n::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10px;
+    color: #a89f8e;
+    text-transform: uppercase;
+    letter-spacing: .08em;
   }
 }
-:root[data-theme="dark"]{
-  color-scheme:dark;
-  --paper:#14181f;--sheet:#1b2029;--hover:#232a36;
-  --ink:#e4e8ee;--ink-2:#9aa5b4;--rule:#323a48;--rule-soft:#272e3a;
-  --pen:#8fb0ff;--pen-bg:#1f2a44;--on-pen:#0f1a33;
-  --red:#ff8d78;--red-bg:#4a211b;
-  --tick:#6fd69c;--tick-bg:#153a28;
-  --mark:#4d4216;--mark-ink:#ffe98a;--mark-edge:#a58a10;
+
+@media (max-width: 520px) {
+  body::before { width: 6px; }
+  main { padding-left: 16px; }
+  h1 { font-size: 22px; }
+  h1::before { display: none; }
+  .chips { gap: 8px; }
+  .chip { padding: 7px 11px; font-size: 12px; }
+  .chip b { font-size: 14px; }
 }
 
-/* ---------- основа ---------- */
-*{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans)}
-main{
-  max-width:1120px;margin:0 auto;
-  padding:32px max(16px,env(safe-area-inset-right,0px)) 72px max(16px,env(safe-area-inset-left,0px));
-}
-h1{font:700 30px/1.15 var(--serif);letter-spacing:-.01em;margin:0 0 10px}
-.lead{margin:0;max-width:64ch;color:var(--ink-2)}
-:focus-visible{outline:2px solid var(--pen);outline-offset:2px}
-
-/* ---------- зоны загрузки ---------- */
-.zones{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:26px 0 20px}
-.zone{
-  display:flex;flex-direction:column;align-items:flex-start;gap:8px;
-  min-height:132px;padding:14px 16px;
-  background:var(--sheet);border:1.5px dashed var(--rule);border-radius:6px;
-}
-.zone.ok{border-style:solid;border-left:4px solid var(--tick)}
-.zone.drag{border-color:var(--pen);background:var(--pen-bg)}
-.zone-t{display:flex;align-items:center;gap:10px;font-weight:600}
-.tag{font-size:12px;font-weight:500;padding:1px 8px;border-radius:4px;background:var(--pen-bg);color:var(--pen)}
-.fn{font-size:13px;color:var(--ink-2);word-break:break-all}
-.zone.ok .fn{color:var(--ink)}
-.sheet{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);max-width:100%}
-.zone button{margin-top:auto}
-
-/* ---------- элементы управления ---------- */
-button,select,input[type=search]{
-  font:inherit;color:var(--ink);background:var(--sheet);
-  border:1px solid var(--rule);border-radius:6px;padding:7px 12px;
-}
-button{cursor:pointer}
-button:hover{border-color:var(--pen)}
-button.primary{background:var(--pen);border-color:var(--pen);color:var(--on-pen);font-weight:500}
-select{max-width:100%;padding:5px 8px}
-input[type=search]{min-width:min(100%,240px);margin-left:auto}
-input[type=checkbox]{accent-color:var(--pen);width:16px;height:16px;margin:0}
-.opts{display:flex;flex-wrap:wrap;align-items:center;gap:10px 24px;margin:0 0 20px}
-.opts label{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
-
-/* ---------- итоги ---------- */
-.status{margin:0 0 18px}
-.facts{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;margin:0;
-  background:var(--rule-soft);border:1px solid var(--rule);border-radius:6px;overflow:hidden;
-}
-.fact{background:var(--sheet);padding:10px 16px;min-width:0}
-.fact dt{font-size:12.5px;color:var(--ink-2)}
-.fact dd{margin:2px 0 0;font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
-.fact.bad dd{color:var(--red)}
-.fact.good dd{color:var(--tick)}
-.meter{height:4px;margin-top:8px;border-radius:2px;background:var(--rule-soft);overflow:hidden}
-.meter i{display:block;height:100%;width:0;background:var(--tick);transition:width .25s}
-
-/* ---------- ведомость ---------- */
-#out>*+*{margin-top:14px}
-.ledger{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
-.head{
-  display:grid;grid-template-columns:var(--cols);gap:8px 12px;
-  padding:9px 14px 9px 18px;font-size:12px;font-weight:500;color:var(--ink-2);
-  background:var(--paper);border-bottom:1px solid var(--rule);
-}
-details.emp{border-top:1px solid var(--rule-soft);border-left:4px solid var(--rule)}
-.head+details.emp{border-top:0}
-details.emp.diff{border-left-color:var(--red)}
-details.emp.done{border-left-color:var(--tick)}
-details.emp.done>summary{opacity:.62}
-details.emp>summary{
-  display:grid;grid-template-columns:var(--cols);gap:8px 12px;align-items:center;
-  padding:10px 14px;cursor:pointer;list-style:none;transition:background .12s;
-}
-details.emp>summary::-webkit-details-marker{display:none}
-details.emp>summary:hover{background:var(--hover)}
-details.emp>summary.plain{display:block}
-
-.who{display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;min-width:0}
-.who::before{
-  content:"";flex:none;width:7px;height:7px;margin-right:2px;
-  border-right:2px solid var(--ink-2);border-bottom:2px solid var(--ink-2);
-  transform:rotate(-45deg);transition:transform .15s;
-}
-details[open]>summary .who::before{transform:rotate(45deg)}
-.pos{color:var(--ink-2);font-size:13px}
-.n{text-align:right;font-variant-numeric:tabular-nums}
-.d{color:var(--red);font-weight:600}
-.z{color:var(--tick)}
-.fix{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:13px;cursor:pointer}
-.warn{display:inline-block;font-size:12px;font-weight:500;padding:1px 7px;border-radius:3px;background:var(--mark);color:var(--mark-ink)}
-
-/* ---------- таблица по дням ---------- */
-.grid{overflow-x:auto;padding:6px 14px 14px 18px;border-top:1px solid var(--rule-soft)}
-table{border-collapse:separate;border-spacing:0;font-size:12.5px;border-top:1px solid var(--rule-soft);border-left:1px solid var(--rule-soft)}
-th,td{
-  min-width:32px;padding:4px 6px;text-align:center;font-weight:400;
-  border-right:1px solid var(--rule-soft);border-bottom:1px solid var(--rule-soft);
-}
-thead th{background:var(--paper);color:var(--ink-2);font-weight:500}
-.l{position:sticky;left:0;z-index:1;text-align:left;white-space:nowrap;font-weight:500;background:var(--sheet)}
-thead .l{background:var(--paper)}
-td.x{background:var(--red-bg);color:var(--red);font-weight:700;border-radius:8px;box-shadow:inset 0 0 0 2px var(--red)}
-.only .grid ul{margin:6px 0;padding-left:20px}
-.only li{margin:3px 0}
-
-/* ---------- сообщения ---------- */
-.msg{margin:0 0 12px;padding:10px 14px;border-radius:4px;background:var(--mark);color:var(--mark-ink);border-left:4px solid var(--mark-edge)}
-.msg.ok{background:var(--tick-bg);color:var(--tick);border-left-color:var(--tick)}
-
-/* ---------- правила ---------- */
-.rules{max-width:68ch;margin-top:40px;font-size:13.5px;color:var(--ink-2)}
-.rules h2{margin:0 0 8px;font:700 17px/1.3 var(--serif);color:var(--ink)}
-.rules ul{margin:0;padding-left:1.2em}
-.rules li{margin:4px 0}
-
-/* ---------- узкие экраны ---------- */
-@media(max-width:900px){
-  .head{display:none}
-  details.emp>summary{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .who,.pos{grid-column:1/-1}
-  .n{text-align:left}
-  .n::before{content:attr(data-l);display:block;font-size:11.5px;font-weight:400;color:var(--ink-2)}
-  .n:empty{display:none}
-  .fixcell{grid-column:span 2}
-}
-@media(max-width:700px){
-  .zones{grid-template-columns:1fr}
-  input[type=search]{margin-left:0;flex:1 1 100%}
-}
-@media (prefers-reduced-motion:reduce){
-  *,*::before{transition:none!important}
+/* ============ ПЕЧАТЬ ============ */
+@media print {
+  body { background: #fff; }
+  body::before { display: none; }
+  .zone, .opts, button, #clrFx { display: none; }
+  details.emp { break-inside: avoid; opacity: 1 !important; }
+  details.emp .grid { display: block !important; }
+  .head { position: static; background: #eee; color: #000; }
 }
