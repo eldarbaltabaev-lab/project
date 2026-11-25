@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Сверка табелей</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=PT+Serif:wght@700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>Сверка табелей</h1>
+    <p class="lead">Загрузите два табеля в формате Excel: внутренний или из 1С, в любом сочетании. Формат определяется автоматически. Файлы обрабатываются прямо в браузере и никуда не отправляются.</p>
+  </header>
+
+  <div class="zones" id="zones"></div>
+
+  <div class="opts">
+    <label><input type="checkbox" id="onlyDiff" checked><span>Только с отличиями</span></label>
+    <label title="В 1С отпуск ставится и на выходные, во внутреннем табеле там пусто"><input type="checkbox" id="otEq"><span>Отпуск (ОТ) на выходных не считать отличием</span></label>
+    <label><input type="checkbox" id="hideFx"><span>Скрыть исправленные</span></label>
+    <input type="search" id="q" placeholder="Поиск по ФИО" aria-label="Поиск по ФИО">
+    <button type="button" id="clrFx" title="Снять все отметки «исправил»">Сбросить отметки</button>
+  </div>
+
+  <div id="msg" aria-live="polite"></div>
+  <div id="sum"></div>
+  <div id="out"></div>
+
+  <section class="rules">
+    <h2>Правила сравнения</h2>
+    <ul>
+      <li>Т считается как Б (больничный).</li>
+      <li>НН и НБ считаются как НВ (неявка).</li>
+      <li>НП, В и пустая ячейка считаются как «нет работы».</li>
+      <li>В днях с кодами ОТ, Б, БС и НВ часы не учитываются.</li>
+      <li>Составные отметки сменных (Я/Я/Н/Н, часы 2/2/2/5) складываются: 11 ч.</li>
+      <li>Несколько строк одного сотрудника в 1С (разные должности) объединяются по табельному номеру.</li>
+      <li>Сотрудники сопоставляются по фамилии и инициалам. Если в фамилии ошибка в одну букву, пара помечается «≈ по фамилии».</li>
+    </ul>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
